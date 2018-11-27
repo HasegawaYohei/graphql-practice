@@ -1,0 +1,9 @@
+node_modules/
+.vscode/
+.settings/
+dist/
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+ehthumbs.db
