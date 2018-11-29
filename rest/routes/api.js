@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const models = require('../models');
+const models = require('../../models');
 const config = require('../config/config');
 
 const wrapper = fn => (req, res, next) => fn (req, res).catch(next);
@@ -59,6 +59,18 @@ router.get('/tag/:id/articles', wrapper(async (req, res) => {
   });
   const articles = await tags.getArticles();
   res.status(200).json(articles);
+}));
+
+router.get('/articlesAndTags', wrapper(async (req, res) => {
+  const articles = await models.article.findAll();
+  const response = [];
+  for (let article of articles) {
+    let tags = await article.getTags();
+    let res = article.toJSON();
+    res.tags = tags;
+    response.push(res);
+  }
+  res.status(200).json(response);
 }));
 
 module.exports = router;

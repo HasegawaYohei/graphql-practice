@@ -2,8 +2,11 @@ import '@babel/polyfill';
 import '../public/favicon.png';
 import '../public/logo.png';
 import axios from 'axios';
-const api = axios.create({
+const rest = axios.create({
   baseURL: 'http://localhost:3001'
+});
+const graphql = axios.create({
+  baseURL: 'http://localhost:3002'
 });
 
 const buildArticleListItem = (article, tags=[{name: 'JavaScript'}, {name: 'Ruby'}]) => {
@@ -27,26 +30,62 @@ const buildArticleListItem = (article, tags=[{name: 'JavaScript'}, {name: 'Ruby'
 const addToArticleList = articleDomElem => {
   const listElem = document.getElementById('article-list');
   listElem.innerHTML += articleDomElem;
-}
+};
 
 const nonDisplaySpinner = () => {
   const spinner = document.getElementById('spinner');
   spinner.style.display = 'none';
-}
+};
 
-const fetchArticle = event => {
+const fetchArticleV1 = event => {
   (async () => {
-    const result = (await api.get('/api/articles')).data;
+    const result = (await rest.get('/api/articles')).data;
     result.forEach(v => {
       (async () => {
-        const article = (await api.get(v.uri)).data;
-        const tags = (await api.get(article.tags)).data;
+        const article = (await rest.get(v.uri)).data;
+        const tags = (await rest.get(article.tags)).data;
         const articleListItem = buildArticleListItem(article, tags);
         addToArticleList(articleListItem);
-        nonDisplaySpinner();
       })();
     })
+    nonDisplaySpinner();
   })();
 };
 
-fetchArticle();
+const fetchArticleV2 = () => {
+  (async () => {
+    const articles = (await rest.get('/api/articlesAndTags')).data;
+    articles.forEach(article => {
+      const articleListItem = buildArticleListItem(article, article.tags);
+      addToArticleList(articleListItem);
+    });
+    nonDisplaySpinner();
+  })();
+};
+
+const fetchArticleV3 = () => {
+  const query = `
+{
+  articles {
+    title,
+    tags {
+      name
+    }
+  }
+}
+`;
+  (async () => {
+    const articles = (await graphql.get('/graphql', {
+      params: {
+        query
+      }
+    })).data.data.articles;
+    articles.forEach(article => {
+      const articleListItem = buildArticleListItem(article, article.tags);
+      addToArticleList(articleListItem);
+    });
+    nonDisplaySpinner();
+  })();
+}
+
+fetchArticleV2();
