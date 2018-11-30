@@ -25,5 +25,13 @@ module.exports = {
     dialect: "postgres",
     operatorsAliases: false
   },
-  port: 3001
+  client: {
+    port: 3000
+  },
+  rest: {
+    port: 3001
+  },
+  graphql: {
+    port: 3002
+  }
 };

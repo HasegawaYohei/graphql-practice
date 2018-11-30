@@ -3,10 +3,12 @@ const HtmlWebPackPlugin = require("html-webpack-plugin");
 
 module.exports = {
   mode: 'development',
-  entry: { app: './src/index.js' },
+  entry: {
+    app: './src/client/src/index.js'
+  },
   output: {
-    path: path.join(__dirname, 'dist'),
-    filename: '[name].js',
+    path: path.resolve(__dirname, 'src/client/dist'),
+    filename: '[name].js'
   },
   devtool: 'inline-source-map',
   module: {
@@ -32,19 +34,30 @@ module.exports = {
             options: { minimize: true }
           }
         ]
+      },
+      {
+        test: /\.jpe?g$|\.ico$|\.gif$|\.png$|\.svg$/,
+        use: [
+          {
+            loader: 'file-loader',
+            options: {
+              name: '[name].[ext]'
+            }
+          }
+        ]
       }
     ]
   },
   plugins: [
     new HtmlWebPackPlugin({
-      template: './public/index.html',
+      template: './src/client/public/index.html',
       filename: './index.html'
     })
   ],
   devServer: {
     open: true,
     openPage: 'index.html',
-    contentBase: path.join(__dirname, 'dist'),
+    contentBase: path.resolve(__dirname, 'src/client/dist'),
     watchContentBase: true,
     port: 3000
   }

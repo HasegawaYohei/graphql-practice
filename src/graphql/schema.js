@@ -5,7 +5,7 @@ const {
   GraphQLList,
   GraphQLSchema
 } = require('graphql');
-const models = require('../models');
+const models = require('../../models');
 const modelService = require('./services/model_service');
 
 const TagType = new GraphQLObjectType({

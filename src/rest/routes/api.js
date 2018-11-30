@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const models = require('../../models');
-const config = require('../config/config');
+const models = require('../../../models');
+const config = require('../../../config/config');
 
 const wrapper = fn => (req, res, next) => fn (req, res).catch(next);
 

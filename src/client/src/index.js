@@ -88,4 +88,4 @@ const fetchArticleV3 = () => {
   })();
 }
 
-fetchArticleV2();
+fetchArticleV1();
