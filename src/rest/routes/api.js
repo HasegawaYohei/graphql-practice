@@ -8,7 +8,7 @@ const wrapper = fn => (req, res, next) => fn (req, res).catch(next);
 router.get('/articles', wrapper(async (req, res) => {
   const articles = await models.article.findAll();
   const response = articles.map(article => ( { uri: `/api/article/${article.id}`} ));
-  res.status(200).json(response);
+  return res.status(200).json(response);
 }));
 
 router.get('/article/:id', wrapper(async (req, res) => {
@@ -21,7 +21,7 @@ router.get('/article/:id', wrapper(async (req, res) => {
     ...article,
     tags: `/api/article/${article.id}/tags`
   };
-  res.status(200).json(response);
+  return res.status(200).json(response);
 }));
 
 router.get('/article/:id/tags', wrapper(async (req, res) => {
@@ -32,13 +32,13 @@ router.get('/article/:id/tags', wrapper(async (req, res) => {
   });
   const tags = await article.getTags();
   const response = tags.map(tag => ({ uri: `/api/tag/${tag.id}` }));
-  res.status(200).json(tags);
+  return res.status(200).json(tags);
 }));
 
 router.get('/tags', wrapper(async (req, res) => {
   const tags = await models.tag.findAll();
   const response = tags.map(tag => ( { uri: `/api/tag/${tag.id}`} ));
-  res.status(200).json(response);
+  return res.status(200).json(response);
 }));
 
 router.get('/tag/:id', wrapper(async (req, res) => {
@@ -48,7 +48,7 @@ router.get('/tag/:id', wrapper(async (req, res) => {
     }
   });
   const response = tag.toJSON();
-  res.status(200).json(response);
+  return res.status(200).json(response);
 }));
 
 router.get('/tag/:id/articles', wrapper(async (req, res) => {
@@ -58,11 +58,12 @@ router.get('/tag/:id/articles', wrapper(async (req, res) => {
     }
   });
   const articles = await tags.getArticles();
-  res.status(200).json(articles);
+  return res.status(200).json(articles);
 }));
 
 router.get('/articlesAndTags', wrapper(async (req, res) => {
   const articles = await models.article.findAll();
+  // return res.status(200).json(articles);
   const response = [];
   for (let article of articles) {
     let tags = await article.getTags();
@@ -70,7 +71,7 @@ router.get('/articlesAndTags', wrapper(async (req, res) => {
     res.tags = tags;
     response.push(res);
   }
-  res.status(200).json(response);
+  return res.status(200).json(response);
 }));
 
 module.exports = router;

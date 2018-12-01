@@ -6,7 +6,6 @@ const {
   GraphQLSchema
 } = require('graphql');
 const models = require('../../models');
-const modelService = require('./services/model_service');
 
 const TagType = new GraphQLObjectType({
   name: 'TagType',
@@ -32,10 +31,8 @@ const RootQuery = new GraphQLObjectType({
     articles: {
       type: new GraphQLList(ArticleType),
       async resolve(parent, args) {
-        const articles = await models.article.findAll().then(res => res);
-        return articles.map(async article => {
-          return await modelService.buildArticle(article);
-        });
+        // ../../models/article.js の hooks のコメントアウトを外さないとエラーになります.
+        return await models.article.findAll();
       }
     },
     article: {
