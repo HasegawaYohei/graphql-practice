@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const models = require('../../../models');
-const config = require('../../../config/config');
+
+const asyncMap = (arr, fn) => Promise.all(arr.map(async v => await fn(v)));
 
 const wrapper = fn => (req, res, next) => fn (req, res).catch(next);
 
@@ -17,6 +18,7 @@ router.get('/article/:id', wrapper(async (req, res) => {
       id: req.params.id
     }
   })).toJSON();
+  // return res.status(200).json(article);
   const response = {
     ...article,
     tags: `/api/article/${article.id}/tags`
@@ -32,7 +34,7 @@ router.get('/article/:id/tags', wrapper(async (req, res) => {
   });
   const tags = await article.getTags();
   const response = tags.map(tag => ({ uri: `/api/tag/${tag.id}` }));
-  return res.status(200).json(tags);
+  return res.status(200).json(response);
 }));
 
 router.get('/tags', wrapper(async (req, res) => {
@@ -63,14 +65,14 @@ router.get('/tag/:id/articles', wrapper(async (req, res) => {
 
 router.get('/articlesAndTags', wrapper(async (req, res) => {
   const articles = await models.article.findAll();
-  // return res.status(200).json(articles);
-  const response = [];
-  for (let article of articles) {
-    let tags = await article.getTags();
-    let res = article.toJSON();
-    res.tags = tags;
-    response.push(res);
-  }
+  //return res.status(200).json(articles);
+  const response = await asyncMap(articles, async article => {
+    const articleJSON = article.toJSON();
+    const tags = await article.getTags();
+
+    articleJSON.tags = tags;
+    return articleJSON;
+  });
   return res.status(200).json(response);
 }));
 
