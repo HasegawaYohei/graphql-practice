@@ -23,7 +23,8 @@ const getTags = async (result, options) => {
 module.exports = (sequelize, DataTypes) => {
   const article = sequelize.define('article', {
     title: DataTypes.STRING,
-    content: DataTypes.STRING
+    content: DataTypes.STRING,
+    image: DataTypes.STRING
   }, {
     underscored: true,
     hooks: {
