@@ -1,5 +1,6 @@
 const {
   GraphQLObjectType,
+  GraphQLID,
   GraphQLInt,
   GraphQLString,
   GraphQLList,
@@ -10,16 +11,19 @@ const models = require('../../models');
 const TagType = new GraphQLObjectType({
   name: 'TagType',
   fields: () => ({
-    id: { type: GraphQLInt },
-    name: { type: GraphQLString }
+    id: { type: GraphQLID },
+    name: { type: GraphQLString },
+    articles: { type: new GraphQLList(ArticleType) }
   })
 });
 
 const ArticleType = new GraphQLObjectType({
   name: 'Article',
   fields: () => ({
-    id: { type: GraphQLInt },
+    id: { type: GraphQLID },
     title: { type: GraphQLString },
+    content: { type: GraphQLString },
+    image: { type: GraphQLString },
     author: { type: GraphQLString },
     tags: { type: new GraphQLList(TagType) }
   })
@@ -31,8 +35,14 @@ const RootQuery = new GraphQLObjectType({
     articles: {
       type: new GraphQLList(ArticleType),
       async resolve(parent, args) {
-        // ../../models/article.js の hooks のコメントアウトを外さないとエラーになります.
-        return await models.article.findAll();
+        return models.article.findAll({
+          include: [{
+            model: models.tag,
+            required: false,
+            attributes: ['id', 'name'],
+            through: { attributes: [] }
+          }],
+        });
       }
     },
     article: {
@@ -41,18 +51,30 @@ const RootQuery = new GraphQLObjectType({
         id: { type: GraphQLInt }
       },
       async resolve(parent, args) {
-        const article = await models.article.findOne({
+        return models.article.findOne({
+          include: [{
+            model: models.tag,
+            required: false,
+            attributes: ['id', 'name'],
+            through: { attributes: [] }
+          }],
           where: {
             id: args.id
           }
-        }).then(res => res);
-        return modelService.buildArticle(article);
+        });
       }
     },
     tags: {
       type: new GraphQLList(TagType),
-      resolve(parent, args) {
-        return models.tag.findAll().then(res => res);
+      async resolve(parent, args) {
+        return models.tag.findAll({
+          include: [{
+            model: models.article,
+            required: false,
+            attributes: ['id', 'title'],
+            through: { attributes: [] }
+          }]
+        });
       }
     },
     tag: {
@@ -60,12 +82,18 @@ const RootQuery = new GraphQLObjectType({
       args: {
         id: { type: GraphQLInt }
       },
-      resolve(parent, args) {
+      async resolve(parent, args) {
         return models.tag.findOne({
+          include: [{
+            model: models.article,
+            required: false,
+            attributes: ['id', 'title'],
+            through: { attributes: [] }
+          }],
           where: {
             id: args.id
           }
-        }).then(res => res);
+        });
       }
     }
   }
