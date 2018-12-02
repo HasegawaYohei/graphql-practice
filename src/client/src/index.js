@@ -2,14 +2,16 @@ import '@babel/polyfill';
 import '../public/favicon.png';
 import '../public/logo.png';
 import axios from 'axios';
+
 const rest = axios.create({
   baseURL: 'http://localhost:3001'
 });
 const graphql = axios.create({
   baseURL: 'http://localhost:3002'
 });
+const asyncMap = (arr, fn) => Promise.all(arr.map(async v => await fn(v)));
 
-const buildArticleListItem = (article, tags=[{name: 'JavaScript'}, {name: 'Ruby'}]) => {
+const buildArticleListItem = (article, tags=[]) => {
   const { title, author } = article;
   return `<div class="card grey lighten-5" style="text-align: left">
     <div class="card-content">
@@ -37,24 +39,28 @@ const nonDisplaySpinner = () => {
   spinner.style.display = 'none';
 };
 
-const fetchArticleV1 = event => {
+const fetchArticleV1 = () => {
   (async () => {
     const result = (await rest.get('/api/articles')).data;
     result.forEach(v => {
       (async () => {
         const article = (await rest.get(v.uri)).data;
-        const tags = (await rest.get(article.tags)).data;
+        const tagUris = (await rest.get(article.tags)).data;
+        const tags = await asyncMap(tagUris, async tagUri => {
+          return (await rest.get(tagUri.uri)).data;
+        });
         const articleListItem = buildArticleListItem(article, tags);
         addToArticleList(articleListItem);
+        nonDisplaySpinner();
       })();
     })
-    nonDisplaySpinner();
   })();
 };
 
 const fetchArticleV2 = () => {
   (async () => {
     const articles = (await rest.get('/api/articlesAndTags')).data;
+    console.dir(articles);
     articles.forEach(article => {
       const articleListItem = buildArticleListItem(article, article.tags);
       addToArticleList(articleListItem);
