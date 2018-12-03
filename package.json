@@ -6,7 +6,9 @@
   "author": "Hasegawa Yohei <yoheybrains@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "client": "webpack-dev-server --config webpack.config.js",
+    "setup": "npm i && ./node_modules/.bin/sequelize db:create && ./node_modules/.bin/sequelize db:migrate && ./node_modules/.bin/sequelize db:seed:all && cd src/vue-client && npm i",
+    "setup:yarn": "yarn && yarn run sequelize db:create && yarn run db:migrate && yarn run sequelize db:seed:all && cd src/vue-client && yarn",
+    "client": "cd src/vue-client && ./node_modules/.bin/vue-cli-service serve",
     "rest": "./node_modules/.bin/nodemon ./src/rest/bin/www",
     "graphql": "./node_modules/.bin/nodemon ./src/graphql/bin/www",
     "build": "webpack --mode production --config webpack.config.js"
