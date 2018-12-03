@@ -32,7 +32,7 @@
 </template>
 
 <script>
-import Api from '@/services/Api.cheat-sheet';
+import Api from '@/services/Api';
 
 export default {
   data() {
