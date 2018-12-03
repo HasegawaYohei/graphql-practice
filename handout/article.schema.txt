@@ -1,0 +1,11 @@
+                                       Table "public.articles"
+   Column   |           Type           | Collation | Nullable |               Default
+------------+--------------------------+-----------+----------+--------------------------------------
+ id         | integer                  |           | not null | nextval('articles_id_seq'::regclass)
+ title      | character varying(255)   |           |          |
+ content    | character varying(1000)  |           |          |
+ image      | character varying(100)   |           |          |
+ created_at | timestamp with time zone |           | not null |
+ updated_at | timestamp with time zone |           | not null |
+Indexes:
+    "articles_pkey" PRIMARY KEY, btree (id)
