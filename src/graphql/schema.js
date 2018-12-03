@@ -1,3 +1,4 @@
+// require('graphql') から 使用するクラスなどを読み込みます
 const {
   GraphQLObjectType,
   GraphQLID,
@@ -6,99 +7,33 @@ const {
   GraphQLList,
   GraphQLSchema
 } = require('graphql');
+// 今回使用するデータリソースは DB なので Sequelize のモデルを読み込みます
 const models = require('../../models');
 
+// 使用するデータの Schema(Type) を定義します
 const TagType = new GraphQLObjectType({
   name: 'TagType',
   fields: () => ({
-    id: { type: GraphQLID },
-    name: { type: GraphQLString },
-    articles: { type: new GraphQLList(ArticleType) }
   })
 });
 
 const ArticleType = new GraphQLObjectType({
-  name: 'Article',
-  fields: () => ({
-    id: { type: GraphQLID },
-    title: { type: GraphQLString },
-    content: { type: GraphQLString },
-    image: { type: GraphQLString },
-    author: { type: GraphQLString },
-    tags: { type: new GraphQLList(TagType) }
-  })
 });
 
+// RootQuery として定義したデータすべてにリンクを辿れるような Schema(Type) を定義します
 const RootQuery = new GraphQLObjectType({
   name: 'RootQuery',
   fields: {
     articles: {
       type: new GraphQLList(ArticleType),
       async resolve(parent, args) {
-        return models.article.findAll({
-          include: [{
-            model: models.tag,
-            required: false,
-            attributes: ['id', 'name'],
-            through: { attributes: [] }
-          }],
-        });
+        return models.article.findAll();
       }
     },
-    article: {
-      type: ArticleType,
-      args: {
-        id: { type: GraphQLInt }
-      },
-      async resolve(parent, args) {
-        return models.article.findOne({
-          include: [{
-            model: models.tag,
-            required: false,
-            attributes: ['id', 'name'],
-            through: { attributes: [] }
-          }],
-          where: {
-            id: args.id
-          }
-        });
-      }
-    },
-    tags: {
-      type: new GraphQLList(TagType),
-      async resolve(parent, args) {
-        return models.tag.findAll({
-          include: [{
-            model: models.article,
-            required: false,
-            attributes: ['id', 'title'],
-            through: { attributes: [] }
-          }]
-        });
-      }
-    },
-    tag: {
-      type: TagType,
-      args: {
-        id: { type: GraphQLInt }
-      },
-      async resolve(parent, args) {
-        return models.tag.findOne({
-          include: [{
-            model: models.article,
-            required: false,
-            attributes: ['id', 'title'],
-            through: { attributes: [] }
-          }],
-          where: {
-            id: args.id
-          }
-        });
-      }
-    }
   }
 });
 
+// query に RootQuery を指定して GraphQLSchema のインスタンスを export します
 module.exports = new GraphQLSchema({
   query: RootQuery
 });
