@@ -28,20 +28,35 @@
         </v-flex>
       </v-layout>
     </div>
+
+    <div v-if="pageInfo !== null && pageInfo.hasNext">
+      <v-btn class="mt-4" color="#FF5252" style="color: #FFFFFF" @click="fetchMore(pageInfo.after)">more</v-btn>
+    </div>
   </div>
 </template>
 
 <script>
-import Api from '@/services/Api.cheat-sheet';
+import Api from '@/services/Api';
 
 export default {
   data() {
     return {
       articles: null,
+      pageInfo: null,
     };
   },
   async mounted() {
-    this.articles = await Api.fetchArticles();
+    const fetchResult = await Api.fetchArticles('');
+    this.articles = fetchResult.edges.map(edge => edge.node);
+    this.pageInfo = fetchResult.pageInfo;
+  },
+  methods: {
+    async fetchMore(after) {
+      if (!this.pageInfo.hasNext) return;
+      const fetchResult = await Api.fetchArticles(after);
+      this.articles = this.articles.concat(fetchResult.edges.map(edge => edge.node));
+      this.pageInfo = fetchResult.pageInfo;
+    },
   },
 };
 </script>
